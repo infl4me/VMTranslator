@@ -1,0 +1,25 @@
+---
+root: true
+
+plugins:
+  - jest
+  - babel
+
+env:
+  node: true
+  jest: true
+  browser: true
+
+parser: babel-eslint
+
+extends:
+  - 'airbnb-base'
+  - 'plugin:jest/recommended'
+
+rules:
+  no-console: error
+  import/extensions: 0
+  import/prefer-default-export: 0
+  array-callback-return: 0
+  consistent-return: 0
+  arrow-body-style: 0
