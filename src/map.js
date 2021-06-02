@@ -9,4 +9,11 @@ export const COMMAND_TYPES = {
   sub: 'sub',
   pop: 'pop',
   push: 'push',
+  or: 'or',
+  and: 'and',
+  eq: 'eq',
+  lt: 'lt',
+  gt: 'gt',
+  neg: 'neg',
+  not: 'not',
 };

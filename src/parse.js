@@ -4,6 +4,13 @@ const mapCommand2Type = (command) => {
   switch (command) {
     case COMMAND_TYPES.add:
     case COMMAND_TYPES.sub:
+    case COMMAND_TYPES.eq:
+    case COMMAND_TYPES.lt:
+    case COMMAND_TYPES.gt:
+    case COMMAND_TYPES.or:
+    case COMMAND_TYPES.and:
+    case COMMAND_TYPES.neg:
+    case COMMAND_TYPES.not:
       return INSTRUCTION_TYPES.C_ARITHMETIC;
     case COMMAND_TYPES.pop:
       return INSTRUCTION_TYPES.C_POP;
