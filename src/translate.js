@@ -133,7 +133,6 @@ D=M
 M=M-1
 A=M
 D=M-D
-
 @SET_TRUE${translateBoolCallsCount}
 D;${BOOL_OPERATIONS_TO_JMP_FLAG_MAP[operation]}
 @SP
@@ -141,12 +140,10 @@ A=M
 M=0
 @END${translateBoolCallsCount}
 0;JMP
-
 (SET_TRUE${translateBoolCallsCount})
   @SP
   A=M
   M=-1
-
 (END${translateBoolCallsCount})
 @SP
 M=M+1`;
