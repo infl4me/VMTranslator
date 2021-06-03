@@ -8,6 +8,35 @@ const SEGMENT_ARG_TO_VARIABLE_MAP = {
   temp: 'TEMP',
 };
 
+const translatePointerPop = (command) => {
+  const map = {
+    0: 'THIS',
+    1: 'THAT',
+  };
+
+  return `@SP
+M=M-1
+A=M
+D=M
+@${map[command]}
+M=D`;
+};
+
+const translatePointerPush = (command) => {
+  const map = {
+    0: 'THIS',
+    1: 'THAT',
+  };
+
+  return `@${map[command]}
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1`;
+};
+
 const translatePush = (segment, address) => {
   return `@${address}
 D=A
@@ -147,10 +176,17 @@ export const translate = (instructions) => {
         if (instruction.segment === 'temp') {
           return translateTempPush(Number(instruction.value));
         }
+        if (instruction.segment === 'pointer') {
+          return translatePointerPush(instruction.value);
+        }
+
         return translatePush(instruction.segment, instruction.value);
       case INSTRUCTION_TYPES.C_POP:
         if (instruction.segment === 'temp') {
           return translateTempPop(Number(instruction.value));
+        }
+        if (instruction.segment === 'pointer') {
+          return translatePointerPop(instruction.value);
         }
         return translatePop(instruction.segment, instruction.value);
       case INSTRUCTION_TYPES.C_ARITHMETIC: {
