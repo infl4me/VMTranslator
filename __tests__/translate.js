@@ -841,3 +841,91 @@ test('translate (PointerTest)', async () => {
     M=M+1"
   `);
 });
+
+test('translate (StaticTest)', async () => {
+  const input = await fs.readFile(path.join(__dirname, '__fixtures__', 'input', 'StaticTest'), 'utf-8');
+  // eslint-disable-next-line no-underscore-dangle
+  window.__MOCK_FILENAME__ = 'StaticTest';
+  expect(translate(parse(input))).toMatchInlineSnapshot(`
+    "@111
+    D=A
+    @SP
+    A=M
+    M=D
+    @SP
+    M=M+1
+    @333
+    D=A
+    @SP
+    A=M
+    M=D
+    @SP
+    M=M+1
+    @888
+    D=A
+    @SP
+    A=M
+    M=D
+    @SP
+    M=M+1
+    @SP
+    M=M-1
+    A=M
+    D=M
+    @StaticTest.8
+    M=D
+    @SP
+    M=M-1
+    A=M
+    D=M
+    @StaticTest.3
+    M=D
+    @SP
+    M=M-1
+    A=M
+    D=M
+    @StaticTest.1
+    M=D
+    @StaticTest.3
+    D=M
+    @SP
+    A=M
+    M=D
+    @SP
+    M=M+1
+    @StaticTest.1
+    D=M
+    @SP
+    A=M
+    M=D
+    @SP
+    M=M+1
+    @SP
+    M=M-1
+    A=M
+    D=M
+    @SP
+    M=M-1
+    A=M
+    M=M-D
+    @SP
+    M=M+1
+    @StaticTest.8
+    D=M
+    @SP
+    A=M
+    M=D
+    @SP
+    M=M+1
+    @SP
+    M=M-1
+    A=M
+    D=M
+    @SP
+    M=M-1
+    A=M
+    M=M+D
+    @SP
+    M=M+1"
+  `);
+});

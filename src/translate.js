@@ -8,6 +8,25 @@ const SEGMENT_ARG_TO_VARIABLE_MAP = {
   temp: 'TEMP',
 };
 
+const translateStaticPop = (namespace, address) => {
+  return `@SP
+M=M-1
+A=M
+D=M
+@${namespace}.${address}
+M=D`;
+};
+
+const translateStaticPush = (namespace, address) => {
+  return `@${namespace}.${address}
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1`;
+};
+
 const translatePointerPop = (command) => {
   const map = {
     0: 'THIS',
@@ -176,6 +195,10 @@ export const translate = (instructions) => {
         if (instruction.segment === 'pointer') {
           return translatePointerPush(instruction.value);
         }
+        if (instruction.segment === 'static') {
+          // eslint-disable-next-line no-undef
+          return translateStaticPush(__MOCK_FILENAME__, instruction.value);
+        }
 
         return translatePush(instruction.segment, instruction.value);
       case INSTRUCTION_TYPES.C_POP:
@@ -185,6 +208,11 @@ export const translate = (instructions) => {
         if (instruction.segment === 'pointer') {
           return translatePointerPop(instruction.value);
         }
+        if (instruction.segment === 'static') {
+          // eslint-disable-next-line no-undef
+          return translateStaticPop(__MOCK_FILENAME__, instruction.value);
+        }
+
         return translatePop(instruction.segment, instruction.value);
       case INSTRUCTION_TYPES.C_ARITHMETIC: {
         if ([COMMAND_TYPES.neg, COMMAND_TYPES.not].includes(instruction.command)) {
