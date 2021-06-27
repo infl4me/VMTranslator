@@ -8,7 +8,7 @@ const SEGMENT_ARG_TO_VARIABLE_MAP = {
   temp: 'TEMP',
 };
 
-const translateStaticPop = (namespace, address) => {
+const writeStaticPop = (namespace, address) => {
   return `@SP
 M=M-1
 A=M
@@ -17,7 +17,7 @@ D=M
 M=D`;
 };
 
-const translateStaticPush = (namespace, address) => {
+const writeStaticPush = (namespace, address) => {
   return `@${namespace}.${address}
 D=M
 @SP
@@ -27,7 +27,7 @@ M=D
 M=M+1`;
 };
 
-const translatePointerPop = (command) => {
+const writePointerPop = (command) => {
   const map = {
     0: 'THIS',
     1: 'THAT',
@@ -41,7 +41,7 @@ D=M
 M=D`;
 };
 
-const translatePointerPush = (command) => {
+const writePointerPush = (command) => {
   const map = {
     0: 'THIS',
     1: 'THAT',
@@ -56,7 +56,7 @@ M=D
 M=M+1`;
 };
 
-const translatePush = (segment, address) => {
+const writePush = (segment, address) => {
   return `@${address}
 D=A
 @${SEGMENT_ARG_TO_VARIABLE_MAP[segment]}
@@ -70,7 +70,7 @@ M=D
 M=M+1`;
 };
 
-const translateTempPush = (i) => {
+const writeTempPush = (i) => {
   return `@R${5 + i}
 D=M
 @SP
@@ -80,7 +80,7 @@ M=D
 M=M+1`;
 };
 
-const translateConstantPush = (value) => {
+const writeConstantPush = (value) => {
   return `@${value}
 D=A
 @SP
@@ -90,7 +90,7 @@ M=D
 M=M+1`;
 };
 
-const translatePop = (segment, address) => {
+const writePop = (segment, address) => {
   return `@${address}
 D=A
 @${SEGMENT_ARG_TO_VARIABLE_MAP[segment]}
@@ -106,7 +106,7 @@ A=M
 M=D`;
 };
 
-const translateTempPop = (i) => {
+const writeTempPop = (i) => {
   return `@SP
 M=M-1
 A=M
@@ -115,7 +115,7 @@ D=M
 M=D`;
 };
 
-const translateArithmetic = (command) => {
+const writeArithmetic = (command) => {
   const map = {
     [COMMAND_TYPES.add]: '+',
     [COMMAND_TYPES.sub]: '-',
@@ -140,9 +140,9 @@ const BOOL_OPERATIONS_TO_JMP_FLAG_MAP = {
   lt: 'JLT',
   gt: 'JGT',
 };
-let translateBoolCallsCount = 0;
-const translateBool = (operation) => {
-  translateBoolCallsCount += 1;
+let writeBoolCallsCount = 0;
+const writeBool = (operation) => {
+  writeBoolCallsCount += 1;
 
   return `@SP
 M=M-1
@@ -152,23 +152,23 @@ D=M
 M=M-1
 A=M
 D=M-D
-@SET_TRUE${translateBoolCallsCount}
+@SET_TRUE${writeBoolCallsCount}
 D;${BOOL_OPERATIONS_TO_JMP_FLAG_MAP[operation]}
 @SP
 A=M
 M=0
-@END${translateBoolCallsCount}
+@END${writeBoolCallsCount}
 0;JMP
-(SET_TRUE${translateBoolCallsCount})
+(SET_TRUE${writeBoolCallsCount})
 @SP
 A=M
 M=-1
-(END${translateBoolCallsCount})
+(END${writeBoolCallsCount})
 @SP
 M=M+1`;
 };
 
-const translateUnary = (command) => {
+const writeUnary = (command) => {
   const map = {
     [COMMAND_TYPES.neg]: '-',
     [COMMAND_TYPES.not]: '!',
@@ -182,21 +182,28 @@ M=${map[command]}M
 M=M+1`;
 };
 
-const translateFunction = (args = []) => {
+// const writeInit = () => {
+//   return `@256
+//   D=A
+//   @SP
+//   M=D // init SP to 256`;
+// };
+
+const writeFunction = (args) => {
   const [fnName, rawLocalVarCount = 0] = args;
   const localVarCount = Number(rawLocalVarCount);
   if (!fnName) {
-    throw new Error('[translateFunction] No fnName provided');
+    throw new Error('[writeFunction] No fnName provided');
   }
 
   if (Number.isNaN(localVarCount) || localVarCount < 0) {
-    throw new Error(`[translateFunction] Invalid localVarCount: "${localVarCount}"`);
+    throw new Error(`[writeFunction] Invalid localVarCount: "${localVarCount}"`);
   }
 
   const initializingLocalsToZero = Array.from({ length: localVarCount }, (_, idx) => idx)
     .map((localAddress) => {
-      const pushingZeroToStack = translateConstantPush(0);
-      const initialazingLocalToZero = translatePop('local', localAddress);
+      const pushingZeroToStack = writeConstantPush(0);
+      const initialazingLocalToZero = writePop('local', localAddress);
 
       return [pushingZeroToStack, initialazingLocalToZero].join('\n');
     })
@@ -205,9 +212,9 @@ const translateFunction = (args = []) => {
   return [`(${fnName})`, initializingLocalsToZero].filter(Boolean).join('\n');
 };
 
-const translateReturn = () => {
+const writeReturn = () => {
   // {adress} = *(FRAME - {shift})
-  const translateFrameExtraction = (shift, address) => `@${shift}
+  const writeFrameExtraction = (shift, address) => `@${shift}
 D=A
 @R15
 A=M-D
@@ -220,38 +227,38 @@ D=M
 @R15
 M=D // save frame address to R15
 
-${translateFrameExtraction(5, 'R14')} // put return address (frame - 5) to R14
+${writeFrameExtraction(5, 'R14')} // put return address (frame - 5) to R14
 
-${translatePop('argument', 0)} // put last value to arg0
+${writePop('argument', 0)} // put last value to arg0
 
 @ARG
 D=M
 @SP
 M=D+1 // set SP to ARG+1
 
-${translateFrameExtraction(1, 'THAT')}
-${translateFrameExtraction(2, 'THIS')}
-${translateFrameExtraction(3, 'ARG')}
-${translateFrameExtraction(4, 'LCL')} // restore special registers
+${writeFrameExtraction(1, 'THAT')}
+${writeFrameExtraction(2, 'THIS')}
+${writeFrameExtraction(3, 'ARG')}
+${writeFrameExtraction(4, 'LCL')} // restore special registers
 
 @R14
 A=M
 0;JMP // go to return address`;
 };
 
-const translateLabel = (args) => {
+const writeLabel = (args) => {
   const [label] = args;
   if (!label) {
-    throw new Error(`[translateLabel] No label provided`);
+    throw new Error(`[writeLabel] No label provided`);
   }
 
   return `(${label})`;
 };
 
-const translateIfGoto = (args) => {
+const writeIfGoto = (args) => {
   const [label] = args;
   if (!label) {
-    throw new Error(`[translateIfGoto] No label provided`);
+    throw new Error(`[writeIfGoto] No label provided`);
   }
 
   return `@SP
@@ -262,10 +269,10 @@ D=M
 D;JNE`;
 };
 
-const translateGoto = (args) => {
+const writeGoto = (args) => {
   const [label] = args;
   if (!label) {
-    throw new Error(`[translateGoto] No label provided`);
+    throw new Error(`[writeGoto] No label provided`);
   }
 
   return `@${label}
@@ -273,63 +280,63 @@ const translateGoto = (args) => {
 };
 
 export const translate = (instructions) => {
-  const translatedInstructions = instructions.map((instruction) => {
+  const writedInstructions = instructions.map((instruction) => {
     switch (instruction.type) {
       case INSTRUCTION_TYPES.C_PUSH:
         if (instruction.segment === 'constant') {
-          return translateConstantPush(instruction.value);
+          return writeConstantPush(instruction.value);
         }
         if (instruction.segment === 'temp') {
-          return translateTempPush(Number(instruction.value));
+          return writeTempPush(Number(instruction.value));
         }
         if (instruction.segment === 'pointer') {
-          return translatePointerPush(instruction.value);
+          return writePointerPush(instruction.value);
         }
         if (instruction.segment === 'static') {
           // eslint-disable-next-line no-undef
-          return translateStaticPush(__MOCK_FILENAME__, instruction.value);
+          return writeStaticPush(__MOCK_FILENAME__, instruction.value);
         }
 
-        return translatePush(instruction.segment, instruction.value);
+        return writePush(instruction.segment, instruction.value);
       case INSTRUCTION_TYPES.C_POP:
         if (instruction.segment === 'temp') {
-          return translateTempPop(Number(instruction.value));
+          return writeTempPop(Number(instruction.value));
         }
         if (instruction.segment === 'pointer') {
-          return translatePointerPop(instruction.value);
+          return writePointerPop(instruction.value);
         }
         if (instruction.segment === 'static') {
           // eslint-disable-next-line no-undef
-          return translateStaticPop(__MOCK_FILENAME__, instruction.value);
+          return writeStaticPop(__MOCK_FILENAME__, instruction.value);
         }
 
-        return translatePop(instruction.segment, instruction.value);
+        return writePop(instruction.segment, instruction.value);
       case INSTRUCTION_TYPES.C_ARITHMETIC: {
         if ([COMMAND_TYPES.neg, COMMAND_TYPES.not].includes(instruction.command)) {
-          return translateUnary(instruction.command);
+          return writeUnary(instruction.command);
         }
 
         const boolOperations = [COMMAND_TYPES.eq, COMMAND_TYPES.gt, COMMAND_TYPES.lt];
         if (boolOperations.includes(instruction.command)) {
-          return translateBool(instruction.command);
+          return writeBool(instruction.command);
         }
 
-        return translateArithmetic(instruction.command);
+        return writeArithmetic(instruction.command);
       }
       case INSTRUCTION_TYPES.C_FUNCTION: {
-        return translateFunction(instruction.args);
+        return writeFunction(instruction.args);
       }
       case INSTRUCTION_TYPES.C_RETURN: {
-        return translateReturn();
+        return writeReturn();
       }
       case INSTRUCTION_TYPES.C_LABEL: {
-        return translateLabel(instruction.args);
+        return writeLabel(instruction.args);
       }
       case INSTRUCTION_TYPES.C_IF: {
-        return translateIfGoto(instruction.args);
+        return writeIfGoto(instruction.args);
       }
       case INSTRUCTION_TYPES.C_GOTO: {
-        return translateGoto(instruction.args);
+        return writeGoto(instruction.args);
       }
 
       default:
@@ -337,5 +344,5 @@ export const translate = (instructions) => {
     }
   });
 
-  return translatedInstructions.join('\n');
+  return writedInstructions.join('\n');
 };
