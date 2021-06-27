@@ -319,9 +319,9 @@ test('translate (StackTest)', async () => {
     @END1
     0;JMP
     (SET_TRUE1)
-      @SP
-      A=M
-      M=-1
+    @SP
+    A=M
+    M=-1
     (END1)
     @SP
     M=M+1
@@ -355,9 +355,9 @@ test('translate (StackTest)', async () => {
     @END2
     0;JMP
     (SET_TRUE2)
-      @SP
-      A=M
-      M=-1
+    @SP
+    A=M
+    M=-1
     (END2)
     @SP
     M=M+1
@@ -391,9 +391,9 @@ test('translate (StackTest)', async () => {
     @END3
     0;JMP
     (SET_TRUE3)
-      @SP
-      A=M
-      M=-1
+    @SP
+    A=M
+    M=-1
     (END3)
     @SP
     M=M+1
@@ -427,9 +427,9 @@ test('translate (StackTest)', async () => {
     @END4
     0;JMP
     (SET_TRUE4)
-      @SP
-      A=M
-      M=-1
+    @SP
+    A=M
+    M=-1
     (END4)
     @SP
     M=M+1
@@ -463,9 +463,9 @@ test('translate (StackTest)', async () => {
     @END5
     0;JMP
     (SET_TRUE5)
-      @SP
-      A=M
-      M=-1
+    @SP
+    A=M
+    M=-1
     (END5)
     @SP
     M=M+1
@@ -499,9 +499,9 @@ test('translate (StackTest)', async () => {
     @END6
     0;JMP
     (SET_TRUE6)
-      @SP
-      A=M
-      M=-1
+    @SP
+    A=M
+    M=-1
     (END6)
     @SP
     M=M+1
@@ -535,9 +535,9 @@ test('translate (StackTest)', async () => {
     @END7
     0;JMP
     (SET_TRUE7)
-      @SP
-      A=M
-      M=-1
+    @SP
+    A=M
+    M=-1
     (END7)
     @SP
     M=M+1
@@ -571,9 +571,9 @@ test('translate (StackTest)', async () => {
     @END8
     0;JMP
     (SET_TRUE8)
-      @SP
-      A=M
-      M=-1
+    @SP
+    A=M
+    M=-1
     (END8)
     @SP
     M=M+1
@@ -607,9 +607,9 @@ test('translate (StackTest)', async () => {
     @END9
     0;JMP
     (SET_TRUE9)
-      @SP
-      A=M
-      M=-1
+    @SP
+    A=M
+    M=-1
     (END9)
     @SP
     M=M+1

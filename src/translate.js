@@ -160,9 +160,9 @@ M=0
 @END${translateBoolCallsCount}
 0;JMP
 (SET_TRUE${translateBoolCallsCount})
-  @SP
-  A=M
-  M=-1
+@SP
+A=M
+M=-1
 (END${translateBoolCallsCount})
 @SP
 M=M+1`;
