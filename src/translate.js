@@ -80,8 +80,8 @@ M=D
 M=M+1`;
 };
 
-const translateConstantPush = (address) => {
-  return `@${address}
+const translateConstantPush = (value) => {
+  return `@${value}
 D=A
 @SP
 A=M
@@ -182,6 +182,63 @@ M=${map[command]}M
 M=M+1`;
 };
 
+const translateFunction = (args = []) => {
+  const [fnName, rawLocalVarCount = 0] = args;
+  const localVarCount = Number(rawLocalVarCount);
+  if (!fnName) {
+    throw new Error('[translateFunction] No fnName provided');
+  }
+
+  if (Number.isNaN(localVarCount) || localVarCount < 0) {
+    throw new Error(`[translateFunction] Invalid localVarCount: "${localVarCount}"`);
+  }
+
+  const initializingLocalsToZero = Array.from({ length: localVarCount }, (_, idx) => idx)
+    .map((localAddress) => {
+      const pushingZeroToStack = translateConstantPush(0);
+      const initialazingLocalToZero = translatePop('local', localAddress);
+
+      return [pushingZeroToStack, initialazingLocalToZero].join('\n');
+    })
+    .join('\n');
+
+  return [`(${fnName})`, initializingLocalsToZero].filter(Boolean).join('\n');
+};
+
+const translateReturn = () => {
+  // {adress} = *(FRAME - {shift})
+  const translateFrameExtraction = (shift, address) => `@${shift}
+D=A
+@R15
+A=M-D
+D=M
+@${address}
+M=D`;
+
+  return `@LCL
+D=M
+@R15
+M=D // save frame address to R15
+
+${translateFrameExtraction(5, 'R14')} // put return address (frame - 5) to R14
+
+${translatePop('argument', 0)} // put last value to arg0
+
+@ARG
+D=M
+@SP
+M=D+1 // set SP to ARG+1
+
+${translateFrameExtraction(1, 'THAT')}
+${translateFrameExtraction(2, 'THIS')}
+${translateFrameExtraction(3, 'ARG')}
+${translateFrameExtraction(4, 'LCL')} // restore special registers
+
+@R14
+A=M
+0;JMP // go to return address`;
+};
+
 export const translate = (instructions) => {
   const translatedInstructions = instructions.map((instruction) => {
     switch (instruction.type) {
@@ -226,9 +283,15 @@ export const translate = (instructions) => {
 
         return translateArithmetic(instruction.command);
       }
+      case INSTRUCTION_TYPES.C_FUNCTION: {
+        return translateFunction(instruction.args);
+      }
+      case INSTRUCTION_TYPES.C_RETURN: {
+        return translateReturn();
+      }
 
       default:
-        break;
+        throw new Error(`Unknown instruction type: "${instruction.type}"`);
     }
   });
 

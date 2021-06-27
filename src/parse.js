@@ -16,6 +16,10 @@ const mapCommand2Type = (command) => {
       return INSTRUCTION_TYPES.C_POP;
     case COMMAND_TYPES.push:
       return INSTRUCTION_TYPES.C_PUSH;
+    case COMMAND_TYPES.function:
+      return INSTRUCTION_TYPES.C_FUNCTION;
+    case COMMAND_TYPES.return:
+      return INSTRUCTION_TYPES.C_RETURN;
 
     default:
       return null;
@@ -27,7 +31,7 @@ export const parse = (input) => {
 
   return instructions
     .map((instruction) => {
-      const [command, ...parts] = instruction.trim().split(' ');
+      const [command, ...args] = instruction.trim().split(' ');
 
       if (!command) {
         return null;
@@ -43,7 +47,7 @@ export const parse = (input) => {
       }
 
       if (type === INSTRUCTION_TYPES.C_POP || type === INSTRUCTION_TYPES.C_PUSH) {
-        const [segment, value] = parts;
+        const [segment, value] = args;
         if (!segment) {
           throw new Error(`Unknown segment: "${segment}"`);
         }
@@ -58,6 +62,12 @@ export const parse = (input) => {
           value,
         };
       }
+
+      return {
+        type,
+        command,
+        args,
+      };
     })
     .filter(Boolean);
 };
