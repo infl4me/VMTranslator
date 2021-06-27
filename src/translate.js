@@ -239,6 +239,39 @@ A=M
 0;JMP // go to return address`;
 };
 
+const translateLabel = (args) => {
+  const [label] = args;
+  if (!label) {
+    throw new Error(`[translateLabel] No label provided`);
+  }
+
+  return `(${label})`;
+};
+
+const translateIfGoto = (args) => {
+  const [label] = args;
+  if (!label) {
+    throw new Error(`[translateIfGoto] No label provided`);
+  }
+
+  return `@SP
+M=M-1
+A=M
+D=M
+@${label}
+D;JNE`;
+};
+
+const translateGoto = (args) => {
+  const [label] = args;
+  if (!label) {
+    throw new Error(`[translateGoto] No label provided`);
+  }
+
+  return `@${label}
+0;JMP`;
+};
+
 export const translate = (instructions) => {
   const translatedInstructions = instructions.map((instruction) => {
     switch (instruction.type) {
@@ -288,6 +321,15 @@ export const translate = (instructions) => {
       }
       case INSTRUCTION_TYPES.C_RETURN: {
         return translateReturn();
+      }
+      case INSTRUCTION_TYPES.C_LABEL: {
+        return translateLabel(instruction.args);
+      }
+      case INSTRUCTION_TYPES.C_IF: {
+        return translateIfGoto(instruction.args);
+      }
+      case INSTRUCTION_TYPES.C_GOTO: {
+        return translateGoto(instruction.args);
       }
 
       default:

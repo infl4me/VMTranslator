@@ -24,4 +24,7 @@ export const COMMAND_TYPES = {
   not: 'not',
   function: 'function',
   return: 'return',
+  label: 'label',
+  'if-goto': 'if-goto',
+  goto: 'goto',
 };

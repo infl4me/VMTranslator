@@ -20,6 +20,12 @@ const mapCommand2Type = (command) => {
       return INSTRUCTION_TYPES.C_FUNCTION;
     case COMMAND_TYPES.return:
       return INSTRUCTION_TYPES.C_RETURN;
+    case COMMAND_TYPES.label:
+      return INSTRUCTION_TYPES.C_LABEL;
+    case COMMAND_TYPES['if-goto']:
+      return INSTRUCTION_TYPES.C_IF;
+    case COMMAND_TYPES.goto:
+      return INSTRUCTION_TYPES.C_GOTO;
 
     default:
       return null;
