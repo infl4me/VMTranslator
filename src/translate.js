@@ -194,11 +194,9 @@ const writeFunction = (args) => {
   }
 
   const initializingLocalsToZero = Array.from({ length: localVarCount }, (_, idx) => idx)
-    .map((localAddress) => {
+    .map(() => {
       const pushingZeroToStack = writeConstantPush(0);
-      const initialazingLocalToZero = writePop('local', localAddress);
-
-      return [pushingZeroToStack, initialazingLocalToZero].join('\n');
+      return [pushingZeroToStack].join('\n');
     })
     .join('\n');
 
@@ -273,12 +271,12 @@ const writeGoto = (args) => {
 };
 
 let functionIdCount = 1;
-const genFunctionLabel = (namespace, fnName) => {
-  const label = `${namespace}.${fnName}$ret.${functionIdCount}`;
+const genFunctionLabel = (fnName) => {
+  const label = `${fnName}$ret.${functionIdCount}`;
   functionIdCount += 1;
   return label;
 };
-const writeCall = (args, namespace) => {
+const writeCall = (args) => {
   const [fnName, rawArgsCount = 0] = args;
   const argsCount = Number(rawArgsCount);
   if (!fnName) {
@@ -300,7 +298,7 @@ M=D
 M=M+1`;
   };
 
-  const label = genFunctionLabel(namespace, fnName);
+  const label = genFunctionLabel(fnName);
   return `@${label}
 D=A
 @SP

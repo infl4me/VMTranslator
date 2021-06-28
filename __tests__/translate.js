@@ -943,37 +943,11 @@ test('translate (SimpleFunction)', async () => {
     M=M+1
     @0
     D=A
-    @LCL
-    D=D+M
-    @R13
-    M=D
-    @SP
-    M=M-1
-    A=M
-    D=M
-    @R13
-    A=M
-    M=D
-    @0
-    D=A
     @SP
     A=M
     M=D
     @SP
     M=M+1
-    @1
-    D=A
-    @LCL
-    D=D+M
-    @R13
-    M=D
-    @SP
-    M=M-1
-    A=M
-    D=M
-    @R13
-    A=M
-    M=D
     @0
     D=A
     @LCL
@@ -1522,7 +1496,7 @@ test('translate (FibonacciElement)', async () => {
     @SP
     M=D // init SP to 256
 
-    @undefined.Sys.init$ret.4
+    @Sys.init$ret.4
     D=A
     @SP
     A=M
@@ -1574,7 +1548,7 @@ test('translate (FibonacciElement)', async () => {
     @Sys.init
     0;JMP // jump to calling function
 
-    (undefined.Sys.init$ret.4) // return label after function execution is done
+    (Sys.init$ret.4) // return label after function execution is done
     (Main.fibonacci)
     @0
     D=A
@@ -1729,7 +1703,7 @@ test('translate (FibonacciElement)', async () => {
     M=M-D
     @SP
     M=M+1
-    @FibonacciElement.Main.fibonacci$ret.1
+    @Main.fibonacci$ret.1
     D=A
     @SP
     A=M
@@ -1781,7 +1755,7 @@ test('translate (FibonacciElement)', async () => {
     @Main.fibonacci
     0;JMP // jump to calling function
 
-    (FibonacciElement.Main.fibonacci$ret.1) // return label after function execution is done
+    (Main.fibonacci$ret.1) // return label after function execution is done
     @0
     D=A
     @ARG
@@ -1810,7 +1784,7 @@ test('translate (FibonacciElement)', async () => {
     M=M-D
     @SP
     M=M+1
-    @FibonacciElement.Main.fibonacci$ret.2
+    @Main.fibonacci$ret.2
     D=A
     @SP
     A=M
@@ -1862,7 +1836,7 @@ test('translate (FibonacciElement)', async () => {
     @Main.fibonacci
     0;JMP // jump to calling function
 
-    (FibonacciElement.Main.fibonacci$ret.2) // return label after function execution is done
+    (Main.fibonacci$ret.2) // return label after function execution is done
     @SP
     M=M-1
     A=M
@@ -1945,7 +1919,7 @@ test('translate (FibonacciElement)', async () => {
     M=D
     @SP
     M=M+1
-    @FibonacciElement.Main.fibonacci$ret.3
+    @Main.fibonacci$ret.3
     D=A
     @SP
     A=M
@@ -1997,7 +1971,7 @@ test('translate (FibonacciElement)', async () => {
     @Main.fibonacci
     0;JMP // jump to calling function
 
-    (FibonacciElement.Main.fibonacci$ret.3) // return label after function execution is done
+    (Main.fibonacci$ret.3) // return label after function execution is done
     (WHILE)
     @WHILE
     0;JMP"
