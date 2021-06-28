@@ -10,6 +10,9 @@ export default {
         use: {
           loader: 'babel-loader',
         },
+        resolve: {
+          fullySpecified: false, // disable the behaviour
+        },
       },
     ],
   },
