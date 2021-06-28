@@ -10,6 +10,7 @@
     "testURL": "http://localhost/"
   },
   "main": "src/init.js",
+  "type": "module",
   "devDependencies": {
     "@babel/core": "^7.13.14",
     "@babel/preset-env": "^7.13.12",

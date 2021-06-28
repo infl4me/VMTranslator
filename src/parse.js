@@ -26,6 +26,8 @@ const mapCommand2Type = (command) => {
       return INSTRUCTION_TYPES.C_IF;
     case COMMAND_TYPES.goto:
       return INSTRUCTION_TYPES.C_GOTO;
+    case COMMAND_TYPES.call:
+      return INSTRUCTION_TYPES.C_CALL;
 
     default:
       return null;
@@ -40,6 +42,10 @@ export const parse = (input) => {
       const [command, ...args] = instruction.trim().split(' ');
 
       if (!command) {
+        return null;
+      }
+
+      if (command === '//') {
         return null;
       }
 

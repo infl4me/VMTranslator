@@ -8,7 +8,7 @@ const SEGMENT_ARG_TO_VARIABLE_MAP = {
   temp: 'TEMP',
 };
 
-const writeStaticPop = (namespace, address) => {
+const writeStaticPop = (address, namespace) => {
   return `@SP
 M=M-1
 A=M
@@ -17,7 +17,7 @@ D=M
 M=D`;
 };
 
-const writeStaticPush = (namespace, address) => {
+const writeStaticPush = (address, namespace) => {
   return `@${namespace}.${address}
 D=M
 @SP
@@ -182,13 +182,6 @@ M=${map[command]}M
 M=M+1`;
 };
 
-// const writeInit = () => {
-//   return `@256
-//   D=A
-//   @SP
-//   M=D // init SP to 256`;
-// };
-
 const writeFunction = (args) => {
   const [fnName, rawLocalVarCount = 0] = args;
   const localVarCount = Number(rawLocalVarCount);
@@ -279,7 +272,84 @@ const writeGoto = (args) => {
 0;JMP`;
 };
 
-export const translate = (instructions) => {
+let functionIdCount = 1;
+const genFunctionLabel = (namespace, fnName) => {
+  const label = `${namespace}.${fnName}$ret.${functionIdCount}`;
+  functionIdCount += 1;
+  return label;
+};
+const writeCall = (args, namespace) => {
+  const [fnName, rawArgsCount = 0] = args;
+  const argsCount = Number(rawArgsCount);
+  if (!fnName) {
+    throw new Error('[writeCall] No fnName provided');
+  }
+
+  if (Number.isNaN(argsCount) || argsCount < 0) {
+    throw new Error(`[writeCall] Invalid argsCount: "${argsCount}"`);
+  }
+
+  // pushes the value of the given address
+  const writePushOnToStack = (address) => {
+    return `@${address}
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1`;
+  };
+
+  const label = genFunctionLabel(namespace, fnName);
+  return `@${label}
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1 // push return-address ()ROM
+
+${writePushOnToStack(SEGMENT_ARG_TO_VARIABLE_MAP.local)}
+${writePushOnToStack(SEGMENT_ARG_TO_VARIABLE_MAP.argument)}
+${writePushOnToStack(SEGMENT_ARG_TO_VARIABLE_MAP.this)}
+${writePushOnToStack(SEGMENT_ARG_TO_VARIABLE_MAP.that)}
+
+@${5 + argsCount}
+D=A
+@SP
+D=M-D
+@ARG
+M=D // Reposition ARG
+
+@SP
+D=M
+@LCL
+M=D // Reposition LCL
+
+@${fnName}
+0;JMP // jump to calling function
+
+(${label}) // return label after function execution is done`;
+};
+
+const writeInit = () => {
+  return `@256
+D=A
+@SP
+M=D // init SP to 256
+
+${writeCall(['Sys.init'])}`;
+};
+
+export const concat = (data = []) => {
+  if (data.length === 0) {
+    return '';
+  }
+
+  return [writeInit(), ...data].join('\n');
+};
+
+export const translate = (instructions, namespace) => {
   const writedInstructions = instructions.map((instruction) => {
     switch (instruction.type) {
       case INSTRUCTION_TYPES.C_PUSH:
@@ -293,8 +363,7 @@ export const translate = (instructions) => {
           return writePointerPush(instruction.value);
         }
         if (instruction.segment === 'static') {
-          // eslint-disable-next-line no-undef
-          return writeStaticPush(__MOCK_FILENAME__, instruction.value);
+          return writeStaticPush(instruction.value, namespace);
         }
 
         return writePush(instruction.segment, instruction.value);
@@ -306,8 +375,7 @@ export const translate = (instructions) => {
           return writePointerPop(instruction.value);
         }
         if (instruction.segment === 'static') {
-          // eslint-disable-next-line no-undef
-          return writeStaticPop(__MOCK_FILENAME__, instruction.value);
+          return writeStaticPop(instruction.value, namespace);
         }
 
         return writePop(instruction.segment, instruction.value);
@@ -337,6 +405,9 @@ export const translate = (instructions) => {
       }
       case INSTRUCTION_TYPES.C_GOTO: {
         return writeGoto(instruction.args);
+      }
+      case INSTRUCTION_TYPES.C_CALL: {
+        return writeCall(instruction.args, namespace);
       }
 
       default:

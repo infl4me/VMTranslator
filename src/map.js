@@ -27,4 +27,5 @@ export const COMMAND_TYPES = {
   label: 'label',
   'if-goto': 'if-goto',
   goto: 'goto',
+  call: 'call',
 };
